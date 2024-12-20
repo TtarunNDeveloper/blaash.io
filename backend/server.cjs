@@ -58,12 +58,17 @@ app.get('/auth/google',
   passport.authenticate('google', { scope: ['profile', 'email', 'https://www.googleapis.com/auth/youtube.readonly'] })
 );
 
-app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
-  (req, res) => {
-    res.redirect('http://localhost:5173/dashboard'); // Redirect to frontend dashboard
-  }
-);
+app.post('/auth/google/callback', async (req, res) => {
+  const { token } = req.body;
+  const ticket = await client.verifyIdToken({
+    idToken: token,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+  const payload = ticket.getPayload();
+  const userId = payload['sub'];
+  // Store user info in your database
+});
+
 
 // Endpoint to get YouTube data
 app.get('/api/youtube', async (req, res) => {
